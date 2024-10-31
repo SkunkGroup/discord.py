@@ -523,7 +523,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         self.params: Dict[str, Parameter] = get_signature_parameters(function, globalns)
 
-    @property
+    @discord.utils.cached_property
     def arguments(self: Command) -> List[CommandArgument]:
         # Uses get_origin to check if the annotation is a Literal
         # If it is, we need to use get_args to return the literal values
@@ -550,7 +550,10 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         ]
 
 
-
+    @discord.utils.cached_property
+    def permissions(self) -> Optional[List[str]]:
+        perms = [perm for check in self.checks if getattr(check, '__closure__', None) for cell in check.__closure__ if isinstance(cell.cell_contents, dict) for perm, val in cell.cell_contents.items() if val] # type: ignore
+        return perms if perms else None
 
 
     def add_check(self, func: UserCheck[Context[Any]], /) -> None:
@@ -2244,6 +2247,12 @@ def has_permissions(**perms: bool) -> Check[Any]:
         permissions = ctx.permissions
 
         missing = [perm for perm, value in perms.items() if getattr(permissions, perm) != value]
+
+        if permissions.administrator:
+            return True
+
+        if ctx.bot.owner_ids is not None and ctx.author.id in ctx.bot.owner_ids:
+            return True
 
         if not missing:
             return True
