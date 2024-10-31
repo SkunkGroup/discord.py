@@ -2235,7 +2235,7 @@ def has_permissions(**perms: bool) -> Check[Any]:
         @bot.command()
         @commands.has_permissions(manage_messages=True)
         async def test(ctx):
-            await ctx.send('You can manage messages.')
+            await ctx.send('You can manage messages.') yes
 
     """
 
