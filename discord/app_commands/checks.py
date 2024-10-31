@@ -39,6 +39,7 @@ from typing import (
 import time
 
 from .commands import check
+
 from .errors import (
     NoPrivateMessage,
     MissingRole,
@@ -275,9 +276,11 @@ def has_any_role(*items: Union[int, str]) -> Callable[[T], T]:
             raise NoPrivateMessage()
 
         if any(
-            interaction.user.get_role(item) is not None
-            if isinstance(item, int)
-            else utils_get(interaction.user.roles, name=item) is not None
+            (
+                interaction.user.get_role(item) is not None
+                if isinstance(item, int)
+                else utils_get(interaction.user.roles, name=item) is not None
+            )
             for item in items
         ):
             return True
